@@ -1,17 +1,32 @@
 import pygame
 import random
 
+#TODO Make Blocks move randomly - Done
+#TODO Replace blocks with pictures - Done
+#TODO make the player shoot (next class)
+#TODO Replace horrible sprites with decent sprites
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
 class Block(pygame.sprite.Sprite):
     # constructor - gets called when a new object is created
-    def __init__(self, color, width, height):
+    def __init__(self, color, width, height, p, imageFile):
         super().__init__()
         self.image = pygame.Surface([width, height])
-        self.image.fill(color)
+        self.image = pygame.image.load(imageFile)
         self.rect = self.image.get_rect()
+        self.x_vel = random.randrange(-2, 2)
+        self.y_vel = random.randrange(-2, 2)
+        self.isPlayer = p
+    
+    def getIsPlayer(self):
+        return self.isPlayer
+
+    def moveBlock(self):
+        self.rect.x += self.x_vel
+        self.rect.y += self.y_vel
 
 pygame.init()
 screen_width = 700
@@ -25,7 +40,7 @@ all_sprites_list = pygame.sprite.Group()
 for i in range(50):
     # calling our Block constructor
     # makes a new Block, color black, size 20x15
-    block = Block(BLACK, 20, 15)
+    block = Block(BLACK, 20, 15, False,"rock.png")
 
     #Sets x and y to a random number
     block.rect.x = random.randrange(screen_width)
@@ -36,7 +51,7 @@ for i in range(50):
     all_sprites_list.add(block)
 
 # creates a player Block
-player = Block(RED, 20, 15)
+player = Block(RED, 20, 15, True, "rock.png")
 # add the player block to the all sprites list
 all_sprites_list.add(player)
 
@@ -63,6 +78,10 @@ while not done:
     for block in blocks_hit_list:
         score += 1
         print(score)
+    
+    for block in all_sprites_list:
+        if not block.getIsPlayer():
+            block.moveBlock()
     
     # Draws all the sprites in the group
     # calling blit() on all the sprites in the list
