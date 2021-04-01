@@ -51,7 +51,7 @@ for i in range(50):
     all_sprites_list.add(block)
 
 # creates a player Block
-player = Block(RED, 20, 15, True, "rock.png")
+player = Block(RED, 20, 15, True, "spaceship.png")
 # add the player block to the all sprites list
 all_sprites_list.add(player)
 
