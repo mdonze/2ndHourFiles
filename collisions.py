@@ -6,6 +6,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
+game_over = False
+score = 0
 class Block(pygame.sprite.Sprite):
     # constructor - gets called when a new object is created
     def __init__(self, width, height, imageFile):
@@ -14,6 +16,7 @@ class Block(pygame.sprite.Sprite):
         # makes all the white transparent
         big_image.set_colorkey((255, 255, 255))
         self.image = pygame.transform.scale(big_image, (width, height))
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.x_vel = random.randrange(-2, 2)
         self.y_vel = random.randrange(-2, 2)
@@ -34,6 +37,7 @@ class Player(pygame.sprite.Sprite):
         big_ss = pygame.image.load(fileName)
         big_ss.set_colorkey([255, 255, 255])
         self.image = pygame.transform.scale(big_ss, (width, height))
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = 350
         self.rect.y = 350
@@ -67,6 +71,10 @@ block_list = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 # list to hold our bullets
 bullet_list = pygame.sprite.Group()
+font = pygame.font.Font('freesansbold.ttf', 32)
+text = font.render("Score: " + str(score), True, RED, BLACK)
+textRect = text.get_rect()
+textRect.center = (100, 20) 
 
 # loop in python 
 for i in range(50):
@@ -91,7 +99,7 @@ done = False
 clock = pygame.time.Clock()
 
 # keeps track of collisions
-score = 0
+
 
 while not done:
     for event in pygame.event.get():
@@ -107,47 +115,50 @@ while not done:
             # Add the bullet to the lists
             all_sprites_list.add(bullet)
             bullet_list.add(bullet)
+    if not game_over:
+        screen.fill(BLACK)
+        pos = pygame.mouse.get_pos()
 
-    screen.fill(BLACK)
-    pos = pygame.mouse.get_pos()
+        player.rect.x = pos[0]
 
-    player.rect.x = pos[0]
+        all_sprites_list.update()
 
-    all_sprites_list.update()
+        for bullet in bullet_list:
+            block_hit_list = pygame.sprite.spritecollide(bullet, block_list, True)
 
-    for bullet in bullet_list:
-        block_hit_list = pygame.sprite.spritecollide(bullet, block_list, True)
-
-    # updates the score
-        for block in block_hit_list:
-            bullet_list.remove(bullet)
-            all_sprites_list.remove(bullet)
-            score += 1
-            print(score)
-        if bullet.rect.y < -10:
-            bullet_list.remove(bullet)
-            all_sprites_list.remove(bullet)
-    
-    for block in block_list:
-        if pygame.sprite.collide_rect(block, player):
-            player.isDead()
-        if block.rect.y > screen_height:
-            block.change_y()
-        if block.rect.y < 0:
-            block.change_y()
-        if block.rect.x > screen_width:
-            block.rect.x = 0
-        if block.rect.x < 0:
-            block.rect.x = screen_width
-    
-    if player.is_alive:
+        # updates the score
+            for block in block_hit_list:
+                bullet_list.remove(bullet)
+                all_sprites_list.remove(bullet)
+                score += 1
+                print(score)
+            if bullet.rect.y < -10:
+                bullet_list.remove(bullet)
+                all_sprites_list.remove(bullet)
+        
+        for block in block_list:
+            if pygame.sprite.collide_mask(block, player):
+                player.isDead()
+                game_over = True
+            if block.rect.y > screen_height:
+                block.change_y()
+            if block.rect.y < 0:
+                block.change_y()
+            if block.rect.x > screen_width:
+                block.rect.x = 0
+            if block.rect.x < 0:
+                block.rect.x = screen_width
+        
+        
         all_sprites_list.draw(screen)
+        text = font.render("Score: " + str(score), True, RED, BLACK)
+        screen.blit(text, textRect)
+        
+        # Draws all the sprites in the group
+        # calling blit() on all the sprites in the list
     else:
-        screen.fill("RED")
-        print("Game Over")
+        screen.fill(RED)
     
-    # Draws all the sprites in the group
-    # calling blit() on all the sprites in the list
    
 
     pygame.display.flip()
